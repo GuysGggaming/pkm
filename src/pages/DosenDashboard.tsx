@@ -31,7 +31,7 @@ const DosenDashboard = () => {
     // Check authentication
     const isAuth = localStorage.getItem("dosen_auth");
     const name = localStorage.getItem("dosen_name");
-    
+
     if (!isAuth) {
       navigate("/dosen/login");
       return;
@@ -68,7 +68,7 @@ const DosenDashboard = () => {
     let filtered = activities;
 
     if (searchTerm) {
-      filtered = filtered.filter(activity => 
+      filtered = filtered.filter(activity =>
         activity.nama_mahasiswa.toLowerCase().includes(searchTerm.toLowerCase()) ||
         activity.nim.includes(searchTerm) ||
         activity.nama_kegiatan.toLowerCase().includes(searchTerm.toLowerCase())
@@ -94,8 +94,8 @@ const DosenDashboard = () => {
   };
 
   const handleValidate = (activityId: number) => {
-    const next = activities.map(activity => 
-      activity.id === activityId 
+    const next = activities.map(activity =>
+      activity.id === activityId
         ? { ...activity, status_validasi: "valid", catatan: null }
         : activity
     );
@@ -113,8 +113,8 @@ const DosenDashboard = () => {
   const handleRevisionSubmit = () => {
     if (!revisionDialog.activityId) return;
 
-    const next = activities.map(activity => 
-      activity.id === revisionDialog.activityId 
+    const next = activities.map(activity =>
+      activity.id === revisionDialog.activityId
         ? { ...activity, status_validasi: "revisi", catatan: revisionDialog.catatan }
         : activity
     );
@@ -153,28 +153,35 @@ const DosenDashboard = () => {
 
   const formatDate = (date: string | null) => {
     if (!date) return "-";
-    return new Date(date).toLocaleDateString("id-ID", { 
-      day: "numeric", 
-      month: "long", 
-      year: "numeric" 
+    return new Date(date).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
     });
   };
 
   return (
     <div className="min-h-screen">
-      <nav className="bg-card border-b border-border sticky top-0 z-10">
+      <nav className="bg-primary/95 backdrop-blur-md border-b-2 border-primary/30 text-primary-foreground shadow-xl sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2">
-              <BookOpen className="h-8 w-8 text-primary" />
+            <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+              <div className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-lg">
+                <img src="/unpam_logo.png" alt="UNPAM Logo" className="h-10 w-10 object-contain" />
+              </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">Dashboard Dosen</h1>
-                <p className="text-xs text-muted-foreground">Validasi Kegiatan Ilmiah</p>
+                <h1 className="text-lg font-bold leading-tight">Dashboard Dosen</h1>
+                <p className="text-xs font-medium opacity-90">Validasi Kegiatan Ilmiah</p>
               </div>
             </Link>
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium hidden md:inline">Halo, {dosenName}</span>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                onClick={handleLogout} 
+                className="shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
@@ -187,17 +194,17 @@ const DosenDashboard = () => {
         <div className="space-y-6">
           {/* Statistics */}
           <div className="grid md:grid-cols-4 gap-4">
-            <Card>
+            <Card className="bg-primary/15 backdrop-blur-md border-2 border-primary/30 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Kegiatan</CardTitle>
+                <CardTitle className="text-sm font-medium text-foreground/80">Total Kegiatan</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">{activities.length}</p>
+                <p className="text-3xl font-bold text-primary">{activities.length}</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-secondary/15 backdrop-blur-md border-2 border-secondary/30 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Belum Divalidasi</CardTitle>
+                <CardTitle className="text-sm font-medium text-foreground/80">Belum Divalidasi</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-warning">
@@ -205,9 +212,9 @@ const DosenDashboard = () => {
                 </p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-success/15 backdrop-blur-md border-2 border-success/30 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Sudah Valid</CardTitle>
+                <CardTitle className="text-sm font-medium text-foreground/80">Sudah Valid</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-success">
@@ -215,9 +222,9 @@ const DosenDashboard = () => {
                 </p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-accent/15 backdrop-blur-md border-2 border-accent/30 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Perlu Revisi</CardTitle>
+                <CardTitle className="text-sm font-medium text-foreground/80">Perlu Revisi</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-destructive">
@@ -228,7 +235,7 @@ const DosenDashboard = () => {
           </div>
 
           {/* Filters */}
-          <Card>
+          <Card className="bg-card/95 backdrop-blur-md border-2 border-primary/30 shadow-xl">
             <CardContent className="pt-6">
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="space-y-2">
@@ -288,17 +295,17 @@ const DosenDashboard = () => {
           {/* Activities List */}
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Daftar Kegiatan Ilmiah</h2>
-            
+
             {filteredActivities.length === 0 ? (
-              <Card>
+              <Card className="bg-card/95 backdrop-blur-md border-2 border-primary/30 shadow-xl">
                 <CardContent className="py-12 text-center">
-                  <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">Belum ada data kegiatan. Data akan muncul setelah mahasiswa mengirim.</p>
+                  <FileText className="h-12 w-12 mx-auto text-foreground/60 mb-4" />
+                  <p className="text-foreground/70">Belum ada data kegiatan. Data akan muncul setelah mahasiswa mengirim.</p>
                 </CardContent>
               </Card>
             ) : (
               filteredActivities.map((activity) => (
-                <Card key={activity.id}>
+                <Card key={activity.id} className="bg-card/95 backdrop-blur-md border-2 border-primary/30 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                   <CardContent className="p-6">
                     <div className="grid md:grid-cols-12 gap-6">
                       <div className="md:col-span-7 space-y-3">
@@ -351,9 +358,9 @@ const DosenDashboard = () => {
                               </Button>
                             )}
                             {activity.berkas.link_publikasi && (
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 className="w-full justify-start"
                                 onClick={() => window.open(activity.berkas.link_publikasi, "_blank")}
                               >
@@ -366,14 +373,14 @@ const DosenDashboard = () => {
 
                         {activity.status_validasi === "belum" && (
                           <div className="flex gap-2">
-                            <Button 
+                            <Button
                               className="flex-1 bg-success hover:bg-success/90"
                               onClick={() => handleValidate(activity.id)}
                             >
                               <CheckCircle className="h-4 w-4 mr-2" />
                               Validasi
                             </Button>
-                            <Button 
+                            <Button
                               variant="destructive"
                               className="flex-1"
                               onClick={() => handleReject(activity.id)}
