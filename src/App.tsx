@@ -8,6 +8,7 @@ import StudentForm from "./pages/StudentForm";
 import DosenLogin from "./pages/DosenLogin";
 import DosenDashboard from "./pages/DosenDashboard";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedDashboard";
 
 const queryClient = new QueryClient();
 
@@ -18,12 +19,31 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/kegiatan/form" element={<StudentForm />} />
-          <Route path="/dosen/login" element={<DosenLogin />} />
-          <Route path="/dosen/dashboard" element={<DosenDashboard />} />
+          <Route
+            path="/"
+            element={<Home />}
+          />
+          <Route
+            path="/kegiatan/form"
+            element={<StudentForm />}
+          />
+          <Route
+            path="/dosen/login"
+            element={<DosenLogin />}
+          />
+          <Route
+            path="/dosen/dashboard"
+            element={
+              <ProtectedRoute>
+                <DosenDashboard />
+              </ProtectedRoute>
+            }
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          <Route
+            path="*"
+            element={<NotFound />}
+          />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

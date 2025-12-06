@@ -1,53 +1,55 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { toast } from "sonner";
-import { User, Hash, Calendar, FileText, FolderOpen, Image as ImageIcon, ArrowLeft, Send, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { User, Hash, Calendar, FileText, FolderOpen, FileUp, ArrowLeft, Send, Link as LinkIcon, Plus, Trash2, AlertCircle } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 // ========================================
-// KONFIGURASI - GANTI URL INI!
+// KONFIGURASI
 // ========================================
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyyxrASnDA9hb-ZaW-QEy0ojUTLIP8fEQZQhABi6kxWWN1STgyBVhK_VyWooELEhjJ5aA/exec";
 
-// Mapping kategori dan poin
-const KATEGORI_POIN = {
-  ipk: { label: "IPK", poin: 15 },
-  seminar_internal: { label: "Seminar Internal", poin: 10 },
-  seminar_nasional: { label: "Seminar Nasional", poin: 10 },
-  panitia: { label: "Panitia", poin: 10 },
-  ketua_panitia: { label: "Ketua Panitia", poin: 15 },
-  penelitian: { label: "Penelitian", poin: 15 },
-  jurnal_sinta4: { label: "Jurnal SINTA 4", poin: 20 },
-  jurnal_sinta3: { label: "Jurnal SINTA 3", poin: 35 },
-  jurnal_sinta12: { label: "Jurnal SINTA 1/2", poin: 50 },
-  opini_nasional: { label: "Opini Media Nasional", poin: 20 },
-  opini_lokal: { label: "Opini Media Lokal", poin: 10 },
-  lomba_lokal: { label: "Lomba Lokal", poin: 10 },
-  lomba_nasional: { label: "Lomba Nasional", poin: 50 },
-  pengabdian: { label: "Pengabdian Masyarakat", poin: 15 },
-  mentoring: { label: "Mentoring", poin: 10 },
-} as const;
+// Mapping kategori kegiatan
+const KATEGORI_OPTIONS = [
+  { value: "ipk", label: "IPK", requireFile: true, requireLink: false },
+  { value: "seminar_internal", label: "Seminar Internal", requireFile: true, requireLink: false },
+  { value: "seminar_nasional", label: "Seminar Nasional", requireFile: true, requireLink: false },
+  { value: "panitia", label: "Panitia", requireFile: true, requireLink: false },
+  { value: "ketua_panitia", label: "Ketua Panitia", requireFile: true, requireLink: false },
+  { value: "penelitian", label: "Penelitian", requireFile: true, requireLink: true },
+  { value: "jurnal_sinta4", label: "Jurnal SINTA 4", requireFile: true, requireLink: true },
+  { value: "jurnal_sinta3", label: "Jurnal SINTA 3", requireFile: true, requireLink: true },
+  { value: "jurnal_sinta12", label: "Jurnal SINTA 1/2", requireFile: true, requireLink: true },
+  { value: "opini_nasional", label: "Opini Media Nasional", requireFile: false, requireLink: true },
+  { value: "opini_lokal", label: "Opini Media Lokal", requireFile: false, requireLink: true },
+  { value: "lomba_lokal", label: "Lomba Lokal", requireFile: true, requireLink: false },
+  { value: "lomba_nasional", label: "Lomba Nasional", requireFile: true, requireLink: false },
+  { value: "pengabdian", label: "Pengabdian Masyarakat", requireFile: true, requireLink: false },
+  { value: "mentoring", label: "Mentoring", requireFile: true, requireLink: false },
+];
 
-type KategoriKey = keyof typeof KATEGORI_POIN;
+interface LinkItem {
+  judul: string;
+  url: string;
+}
 
 interface FormData {
-  nama: string;
   nim: string;
-  nama_kegiatan: string;
-  kategori: KategoriKey | "";
   semester: string;
+  kategori: string;
 }
 
 const StudentForm = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
-    nama: "",
     nim: "",
-    nama_kegiatan: "",
-    kategori: "",
     semester: "",
+    kategori: "",
   });
+  const [links, setLinks] = useState<LinkItem[]>([{ judul: "", url: "" }]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  // Get current kategori config
+  const currentKategori = KATEGORI_OPTIONS.find((k) => k.value === formData.kategori);
 
   // Convert file to base64
   const fileToBase64 = (file: File): Promise<string> => {
@@ -59,10 +61,48 @@ const StudentForm = () => {
     });
   };
 
-  // Calculate points
-  const calculatePoints = (kategori: KategoriKey | ""): number => {
-    if (!kategori) return 0;
-    return KATEGORI_POIN[kategori]?.poin || 0;
+  // Get file extension
+  const getFileExtension = (filename: string): string => {
+    return filename.split(".").pop()?.toLowerCase() || "pdf";
+  };
+
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setSelectedFiles((prev) => [...prev, ...files]);
+  };
+
+  // Remove file
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Add link field
+  const addLink = () => {
+    setLinks([...links, { judul: "", url: "" }]);
+  };
+
+  // Remove link field
+  const removeLink = (index: number) => {
+    setLinks(links.filter((_, i) => i !== index));
+  };
+
+  // Update link field
+  const updateLink = (index: number, field: "judul" | "url", value: string) => {
+    const newLinks = [...links];
+    newLinks[index][field] = value;
+    setLinks(newLinks);
+  };
+
+  const showToast = (type: "success" | "error", message: string, description?: string) => {
+    const toast = document.createElement("div");
+    toast.className = `fixed top-4 right-4 p-4 rounded-lg shadow-xl z-50 ${type === "success" ? "bg-green-500" : "bg-red-500"} text-white max-w-md animate-slide-in`;
+    toast.innerHTML = `
+      <div class="font-semibold">${message}</div>
+      ${description ? `<div class="text-sm mt-1 opacity-90">${description}</div>` : ""}
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,94 +110,118 @@ const StudentForm = () => {
     console.log("🚀 [START] Form submission");
 
     // Validation
-    if (!formData.nama || !formData.nim || !formData.nama_kegiatan || !formData.kategori) {
-      toast.error("Mohon lengkapi semua field yang wajib diisi");
+    if (!formData.nim || !formData.semester || !formData.kategori) {
+      showToast("error", "Mohon lengkapi semua field yang wajib diisi");
       return;
+    }
+
+    // Validate based on kategori requirements
+    if (currentKategori?.requireFile && selectedFiles.length === 0) {
+      showToast("error", "File dokumen wajib diupload untuk kategori ini");
+      return;
+    }
+
+    if (currentKategori?.requireLink) {
+      const validLinks = links.filter((l) => l.judul.trim() && l.url.trim());
+      if (validLinks.length === 0) {
+        showToast("error", "Link eksternal wajib diisi untuk kategori ini");
+        return;
+      }
     }
 
     setIsSubmitting(true);
 
     try {
-      // Get foto file
-      const fotoInput = document.getElementById("foto") as HTMLInputElement;
-      const fotoFile = fotoInput?.files?.[0];
-
-      if (!fotoFile) {
-        toast.error("Foto kegiatan wajib diupload!");
-        setIsSubmitting(false);
-        return;
+      // Prepare files array
+      const filesData = [];
+      for (const file of selectedFiles) {
+        const base64 = await fileToBase64(file);
+        filesData.push({
+          name: file.name,
+          ext: getFileExtension(file.name),
+          data: base64,
+        });
       }
 
-      console.log("📸 Converting foto to base64...");
-      const fotoBase64 = await fileToBase64(fotoFile);
+      // Prepare links array (only valid links)
+      const validLinks = links.filter((l) => l.judul.trim() && l.url.trim());
 
-      // Calculate points
-      const poin = calculatePoints(formData.kategori as KategoriKey);
-
-      // Prepare payload - EXACT sesuai Apps Script
+      // Prepare payload
       const payload = {
-        nama: formData.nama.trim(),
         nim: formData.nim.trim(),
-        nama_kegiatan: formData.nama_kegiatan.trim(),
-        kategori: formData.kategori,
         semester: formData.semester,
-        poin: poin,
-        foto: fotoBase64,
+        dokumen: {
+          kategori: formData.kategori,
+          files: filesData,
+          links: validLinks,
+        },
       };
 
-      console.log("📦 Payload:", { ...payload, foto: "[BASE64_DATA]" });
-      console.log("🌐 Sending to:", APPS_SCRIPT_URL);
+      console.log("Payload:", {
+        ...payload,
+        dokumen: {
+          ...payload.dokumen,
+          files: payload.dokumen.files.map((f) => ({ ...f, data: `[BASE64_${f.ext}]` })),
+        },
+      });
 
-      // Send to Apps Script - USE NO-CORS for Google Apps Script
+      console.log("Sending to:", APPS_SCRIPT_URL);
+
+      // Send to Apps Script
       const response = await fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors", // Required for Google Apps Script
+        mode: "no-cors",
         headers: {
           "Content-Type": "text/plain;charset=utf-8",
         },
         body: JSON.stringify(payload),
       });
 
-      console.log("📡 Response:", response.type, response.status);
+      console.log("Response status:", response.status);
 
-      // With no-cors, we can't read the response
-      // Assume success if no error thrown
-      console.log("✅ Request sent (no-cors mode - cannot verify response)");
+      showToast("success", "Data berhasil dikirim!", "Dokumen telah disimpan");
 
-      toast.success("Data berhasil dikirim! 🎉", {
-        description: "Silakan cek Google Sheets untuk verifikasi",
-      });
+      // Reset form
+      setFormData({ nim: "", semester: "", kategori: "" });
+      setLinks([{ judul: "", url: "" }]);
+      setSelectedFiles([]);
 
-      setTimeout(() => navigate("/"), 1500);
+      const fileInput = document.getElementById("dokumen-files") as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
+
+      // Navigate ke home
+      navigate("/");
+      return;
     } catch (error) {
-      console.error("❌ Error:", error);
-      toast.error("Gagal mengirim data. Cek console untuk detail.");
+      console.error("Error:", error);
+      showToast("error", "Gagal mengirim data", "Periksa koneksi internet Anda");
     } finally {
       setIsSubmitting(false);
-      console.log("🏁 [END] Submission process");
+      console.log("[END] Submission process");
     }
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
       <nav className="bg-primary/95 backdrop-blur-md border-b-2 border-primary/30 text-primary-foreground shadow-xl sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-              <div className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-lg">
-                <img src="/unpam_logo.png" alt="UNPAM Logo" className="h-10 w-10 object-contain" />
+            <Link
+              to="/"
+              className="flex items-center gap-3 hover:opacity-90 transition-opacity"
+            >
+              <div className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-lg hover:scale-110 transition-transform duration-300">
+                <img
+                  src="/unpam_logo.png"
+                  alt="UNPAM Logo"
+                  className="h-10 w-10 object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-lg font-bold leading-tight">UNIVERSITAS PAMULANG</h1>
-                <p className="text-xs font-medium opacity-90">Form Pengumpulan Kegiatan Ilmiah</p>
+                <p className="text-xs font-medium opacity-90">Sistem Validasi KIP-K Unpam</p>
               </div>
-            </Link>
-            <Link to="/">
-              <Button variant="secondary" size="sm" className="font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Kembali
-              </Button>
             </Link>
           </div>
         </div>
@@ -170,210 +234,224 @@ const StudentForm = () => {
           <div className="text-center mb-8 space-y-4">
             <div className="flex justify-center">
               <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
-                <div className="relative bg-white/90 backdrop-blur-sm p-4 rounded-full shadow-xl border-2 border-primary/30">
-                  <FileText className="h-12 w-12 md:h-16 md:w-16 text-primary" />
+                <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
+                <div className="relative bg-white/90 p-4 rounded-full shadow-xl border-2 border-blue-200">
+                  <FileText className="h-12 w-12 md:h-16 md:w-16 text-blue-600" />
                 </div>
               </div>
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                Form Kegiatan Ilmiah
-              </h1>
-              <p className="text-lg text-foreground/70">
-                Lengkapi data kegiatan ilmiah Anda
-              </p>
+              <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-2">Upload Dokumen</h1>
             </div>
           </div>
 
-          <div className="bg-card/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-primary/30 p-6 md:p-10 hover:shadow-3xl transition-all duration-300 relative overflow-hidden">
-            {/* Decorative background elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-0"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-secondary/5 rounded-full blur-3xl -z-0"></div>
-            
-            <div className="relative z-10">
-
+          <div className="bg-white/95 rounded-2xl shadow-2xl border-2 border-blue-100 p-6 md:p-10">
             <form
               onSubmit={handleSubmit}
               className="space-y-6"
             >
-              {/* Nama Mahasiswa */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <User className="h-4 w-4 text-primary" />
-                  Nama Mahasiswa <span className="text-destructive">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Masukkan nama lengkap"
-                    value={formData.nama}
-                    onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-                    required
-                    className="w-full px-4 py-3 pl-11 border-2 border-input rounded-xl bg-background/50 backdrop-blur-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 hover:border-primary/50"
-                  />
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-                </div>
-              </div>
 
               {/* NIM */}
               <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Hash className="h-4 w-4 text-primary" />
-                  NIM <span className="text-destructive">*</span>
+                <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <Hash className="h-4 w-4 text-blue-600" />
+                  NIM <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Masukkan NIM"
-                    value={formData.nim}
-                    onChange={(e) => setFormData({ ...formData, nim: e.target.value })}
-                    required
-                    className="w-full px-4 py-3 pl-11 border-2 border-input rounded-xl bg-background/50 backdrop-blur-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 hover:border-primary/50"
-                  />
-                  <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-                </div>
+                <input
+                  type="text"
+                  placeholder="Masukkan NIM Anda"
+                  value={formData.nim}
+                  onChange={(e) => setFormData({ ...formData, nim: e.target.value })}
+                  required
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                />
               </div>
 
               {/* Semester */}
               <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  Semester <span className="text-destructive">*</span>
+                <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <Calendar className="h-4 w-4 text-blue-600" />
+                  Semester <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
-                  <select
-                    value={formData.semester}
-                    onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
-                    required
-                    className="w-full px-4 py-3 pl-11 border-2 border-input rounded-xl bg-background/50 backdrop-blur-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 hover:border-primary/50 appearance-none"
-                  >
-                    <option value="">Pilih semester</option>
-                    <option value="GANJIL 2024/2025">GANJIL 2024/2025</option>
-                    <option value="GENAP 2024/2025">GENAP 2024/2025</option>
-                    <option value="GANJIL 2025/2026">GANJIL 2025/2026</option>
-                    <option value="GENAP 2025/2026">GENAP 2025/2026</option>
-                  </select>
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-                </div>
+                <select
+                  value={formData.semester}
+                  onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
+                  required
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                >
+                  <option value="">Pilih semester</option>
+                  <option value="GANJIL 2024/2025">GANJIL 2024/2025</option>
+                  <option value="GENAP 2024/2025">GENAP 2024/2025</option>
+                  <option value="GANJIL 2025/2026">GANJIL 2025/2026</option>
+                  <option value="GENAP 2025/2026">GENAP 2025/2026</option>
+                </select>
               </div>
 
-              {/* Nama Kegiatan */}
+              {/* Kategori Kegiatan */}
               <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <FileText className="h-4 w-4 text-primary" />
-                  Nama Kegiatan <span className="text-destructive">*</span>
+                <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <FolderOpen className="h-4 w-4 text-blue-600" />
+                  Kategori Kegiatan <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
+                <select
+                  value={formData.kategori}
+                  onChange={(e) => setFormData({ ...formData, kategori: e.target.value })}
+                  required
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                >
+                  <option value="">Pilih kategori</option>
+                  {KATEGORI_OPTIONS.map((opt) => (
+                    <option
+                      key={opt.value}
+                      value={opt.value}
+                    >
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Upload Files - Show if kategori selected and requires file */}
+              {formData.kategori && currentKategori?.requireFile && (
+                <div className="space-y-3 p-4 bg-blue-50/50 rounded-xl border-2 border-blue-100">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <FileUp className="h-4 w-4 text-blue-600" />
+                    Upload File Dokumen {currentKategori.requireFile && <span className="text-red-500">*</span>}
+                  </label>
                   <input
-                    type="text"
-                    placeholder="Contoh: Seminar Nasional AI 2024"
-                    value={formData.nama_kegiatan}
-                    onChange={(e) => setFormData({ ...formData, nama_kegiatan: e.target.value })}
-                    required
-                    className="w-full px-4 py-3 pl-11 border-2 border-input rounded-xl bg-background/50 backdrop-blur-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 hover:border-primary/50"
-                  />
-                  <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Kategori */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <FolderOpen className="h-4 w-4 text-primary" />
-                  Kategori Kegiatan <span className="text-destructive">*</span>
-                </label>
-                <div className="relative">
-                  <select
-                    value={formData.kategori}
-                    onChange={(e) => setFormData({ ...formData, kategori: e.target.value as KategoriKey })}
-                    required
-                    className="w-full px-4 py-3 pl-11 border-2 border-input rounded-xl bg-background/50 backdrop-blur-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 hover:border-primary/50 appearance-none"
-                  >
-                    <option value="">Pilih kategori</option>
-                    {Object.entries(KATEGORI_POIN).map(([key, value]) => (
-                      <option
-                        key={key}
-                        value={key}
-                      >
-                        {value.label} (+{value.poin} poin)
-                      </option>
-                    ))}
-                  </select>
-                  <FolderOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-                </div>
-                {formData.kategori && (
-                  <div className="mt-3 p-4 bg-gradient-to-r from-success/10 to-success/5 border-2 border-success/30 rounded-xl backdrop-blur-sm">
-                    <p className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-success" />
-                      Poin yang akan didapat: <span className="text-lg text-success font-bold">{calculatePoints(formData.kategori as KategoriKey)}</span> poin
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Foto */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <ImageIcon className="h-4 w-4 text-primary" />
-                  Foto Kegiatan <span className="text-destructive">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    id="foto"
+                    id="dokumen-files"
                     type="file"
-                    accept="image/*"
-                    required
-                    className="w-full px-4 py-3 pl-11 border-2 border-input rounded-xl bg-background/50 backdrop-blur-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 hover:border-primary/50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    multiple
+                    onChange={handleFileChange}
+                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-600"
                   />
-                  <ImageIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-                </div>
-                <p className="text-xs text-muted-foreground ml-1">Format: JPG, PNG (Maks. 5MB)</p>
-              </div>
+                  <p className="text-xs text-slate-500">Format: PDF, DOC, DOCX, JPG, PNG (Maks. 10MB per file)</p>
 
-              {/* Info Box */}
-              <div className="p-4 bg-primary/10 border-2 border-primary/20 rounded-xl backdrop-blur-sm">
-                <p className="text-sm text-foreground/80 flex items-start gap-2">
-                  <span className="text-primary font-bold">ℹ️</span>
-                  <span><strong>Info:</strong> Data akan dikirim ke Google Sheets dan divalidasi oleh dosen pembimbing.</span>
-                </p>
-              </div>
+                  {/* Selected Files Preview */}
+                  {selectedFiles.length > 0 && (
+                    <div className="space-y-2 mt-3">
+                      <p className="text-sm font-semibold text-slate-700">File terpilih:</p>
+                      {selectedFiles.map((file, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-200"
+                        >
+                          <span className="text-sm text-slate-600 truncate flex-1">{file.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeFile(idx)}
+                            className="ml-2 p-1 text-red-500 hover:bg-red-50 rounded"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Links - Show if kategori selected and requires link */}
+              {formData.kategori && currentKategori?.requireLink && (
+                <div className="space-y-3 p-4 bg-green-50/50 rounded-xl border-2 border-green-100">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                      <LinkIcon className="h-4 w-4 text-green-600" />
+                      Link Eksternal {currentKategori.requireLink && <span className="text-red-500">*</span>}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={addLink}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-green-600 bg-green-100 hover:bg-green-200 rounded-lg transition-all"
+                    >
+                      <Plus className="h-3 w-3" />
+                      Tambah Link
+                    </button>
+                  </div>
+
+                  {links.map((link, idx) => (
+                    <div
+                      key={idx}
+                      className="space-y-2 p-3 bg-white rounded-lg border border-green-200"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-slate-600">Link #{idx + 1}</span>
+                        {links.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeLink(idx)}
+                            className="p-1 text-red-500 hover:bg-red-50 rounded"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Judul link (contoh: Link Jurnal)"
+                        value={link.judul}
+                        onChange={(e) => updateLink(idx, "judul", e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      />
+                      <input
+                        type="url"
+                        placeholder="URL (contoh: https://...)"
+                        value={link.url}
+                        onChange={(e) => updateLink(idx, "url", e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  onClick={() => navigate("/")}
+                  onClick={() => (window.location.href = "/")}
                   disabled={isSubmitting}
-                  className="flex-1 px-6 py-6 text-base font-semibold border-2 hover:bg-accent hover:border-accent transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-6 py-3 font-semibold border-2 border-slate-300 rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
                 >
-                  <ArrowLeft className="mr-2 h-5 w-5" />
+                  <ArrowLeft className="inline h-5 w-5 mr-2" />
                   Batal
-                </Button>
-                <Button
+                </button>
+                <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 px-6 py-6 text-base font-semibold shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-6 py-3 font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50"
                 >
-                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary/20 via-transparent to-primary/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
                   {isSubmitting ? (
-                    <>
-                      <span className="relative z-10">⏳ Mengirim...</span>
-                    </>
+                    "⏳ Mengirim..."
                   ) : (
                     <>
-                      <Send className="mr-2 h-5 w-5 relative z-10" />
-                      <span className="relative z-10">Kirim Data</span>
+                      <Send className="inline h-5 w-5 mr-2" />
+                      Kirim Dokumen
                     </>
                   )}
-                </Button>
+                </button>
               </div>
             </form>
-            </div>
           </div>
         </div>
       </main>
+
+      <style>{`
+        @keyframes slide-in {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 };

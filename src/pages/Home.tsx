@@ -8,19 +8,26 @@ const Home = () => {
       <nav className="bg-primary/95 backdrop-blur-md border-b-2 border-primary/30 text-primary-foreground shadow-xl sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+            <Link
+              to="/"
+              className="flex items-center gap-3 hover:opacity-90 transition-opacity"
+            >
               <div className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-lg hover:scale-110 transition-transform duration-300">
-                <img src="/unpam_logo.png" alt="UNPAM Logo" className="h-10 w-10 object-contain" />
+                <img
+                  src="/unpam_logo.png"
+                  alt="UNPAM Logo"
+                  className="h-10 w-10 object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-lg font-bold leading-tight">UNIVERSITAS PAMULANG</h1>
-                <p className="text-xs font-medium opacity-90">Sistem Validasi Kegiatan Ilmiah</p>
+                <p className="text-xs font-medium opacity-90">Sistem Validasi KIP-K Unpam</p>
               </div>
             </Link>
             <Link to="/dosen/login">
-              <Button 
-                variant="secondary" 
-                size="sm" 
+              <Button
+                variant="secondary"
+                size="sm"
                 className="font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
               >
                 Login Dosen
@@ -37,33 +44,25 @@ const Home = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse"></div>
               <div className="relative bg-white/90 backdrop-blur-sm p-6 rounded-full shadow-2xl border-4 border-primary/30">
-                <img 
-                  src="/unpam_logo.png" 
-                  alt="UNPAM Logo" 
+                <img
+                  src="/unpam_logo.png"
+                  alt="UNPAM Logo"
                   className="h-32 w-32 md:h-40 md:w-40 object-contain"
                 />
               </div>
             </div>
             <div className="space-y-3">
-              <h1 className="text-2xl md:text-3xl font-bold text-primary">
-                UNIVERSITAS PAMULANG
-              </h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-primary">UNIVERSITAS PAMULANG</h1>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
-              Sistem Pengumpulan dan Validasi
-            </h1>
-            <h2 className="text-3xl md:text-4xl font-bold text-primary">
-              Kegiatan Ilmiah Mahasiswa & Dosen
-            </h2>
-            <p className="text-lg text-foreground/80 max-w-2xl mx-auto leading-relaxed">
-              Platform terintegrasi untuk pengumpulan dan validasi kegiatan ilmiah mahasiswa dengan proses yang mudah dan transparan
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">Sistem Pengumpulan dan Validasi</h1>
+            <h2 className="text-3xl md:text-4xl font-bold text-primary">Kegiatan Ilmiah Mahasiswa & Dosen</h2>
+            <p className="text-lg text-foreground/80 max-w-2xl mx-auto leading-relaxed">Platform pengumpulan dan validasi</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 mt-12">
+          {/* <div className="grid md:grid-cols-3 gap-6 mt-12">
             <div className="group bg-primary/15 backdrop-blur-md p-8 rounded-2xl border-2 border-primary/30 shadow-xl hover:shadow-2xl hover:border-primary/50 hover:-translate-y-2 transition-all duration-300 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -z-0"></div>
               <div className="relative z-10">
@@ -71,9 +70,7 @@ const Home = () => {
                   <Upload className="h-8 w-8 text-primary" />
                 </div>
                 <h3 className="font-bold text-lg mb-3 text-foreground">Upload Mudah</h3>
-                <p className="text-sm text-foreground/80 leading-relaxed">
-                  Kirim data kegiatan ilmiah Anda tanpa perlu registrasi atau login
-                </p>
+                <p className="text-sm text-foreground/80 leading-relaxed">Kirim data kegiatan ilmiah Anda tanpa perlu registrasi atau login</p>
               </div>
             </div>
 
@@ -84,9 +81,7 @@ const Home = () => {
                   <CheckCircle className="h-8 w-8 text-secondary" />
                 </div>
                 <h3 className="font-bold text-lg mb-3 text-foreground">Validasi Cepat</h3>
-                <p className="text-sm text-foreground/80 leading-relaxed">
-                  Dosen dapat memvalidasi atau memberi revisi dengan cepat dan efisien
-                </p>
+                <p className="text-sm text-foreground/80 leading-relaxed">Dosen dapat memvalidasi atau memberi revisi dengan cepat dan efisien</p>
               </div>
             </div>
 
@@ -97,17 +92,15 @@ const Home = () => {
                   <BookOpen className="h-8 w-8 text-accent" />
                 </div>
                 <h3 className="font-bold text-lg mb-3 text-foreground">Transparan</h3>
-                <p className="text-sm text-foreground/80 leading-relaxed">
-                  Pantau status validasi kegiatan ilmiah Anda secara real-time
-                </p>
+                <p className="text-sm text-foreground/80 leading-relaxed">Pantau status validasi kegiatan ilmiah Anda secara real-time</p>
               </div>
             </div>
-          </div>
+          </div> */}
 
-          <div className="pt-8">
+          <div>
             <Link to="/kegiatan/form">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="text-lg px-10 py-7 h-auto shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 relative overflow-hidden group"
               >
                 <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary/20 via-transparent to-primary/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
@@ -115,15 +108,12 @@ const Home = () => {
                 <span className="relative z-10 font-bold">Kirim Kegiatan Ilmiah</span>
               </Button>
             </Link>
-            <p className="text-sm text-foreground/70 mt-5 font-medium">
-              Tidak perlu login, langsung isi formulir
-            </p>
+            <p className="text-sm text-foreground/70 mt-5 font-medium">Tidak perlu login, langsung isi formulir</p>
           </div>
         </div>
       </main>
 
-      <footer className="border-t border-border mt-20">
-      </footer>
+      {/* <footer className="border-t border-border mt-20"></footer> */}
     </div>
   );
 };
