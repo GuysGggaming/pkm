@@ -26,10 +26,10 @@ const KATEGORI_LABELS: Record<string, string> = {
 interface Dokumen {
   kategori: string;
   judul: string;
-  link: string;
+  link: string | string[];
   approved: boolean;
-  type: "file" | "link";
-  catatan: string;
+  type: "file" | "link" | "combined";
+  catatan?: string;
   uploaded_at: number;
 }
 
@@ -363,59 +363,111 @@ const DosenDashboard = () => {
                       {student.dokumentasi.length === 0 ? (
                         <p className="text-sm text-slate-500 italic">Belum ada dokumen</p>
                       ) : (
-                        student.dokumentasi.map((dok, idx) => (
-                          <div
-                            key={idx}
-                            className="p-4 bg-slate-50 rounded-lg border-2 border-slate-200"
-                          >
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div className="flex-1 space-y-2">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">{KATEGORI_LABELS[dok.kategori] || dok.kategori}</span>
-                                  {dok.approved ? (
-                                    <span className="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full">Valid</span>
-                                  ) : dok.catatan && dok.catatan.trim() !== "" ? (
-                                    <span className="px-3 py-1 bg-red-500 text-white text-xs font-semibold rounded-full">Ditolak</span>
-                                  ) : (
-                                    <span className="px-3 py-1 bg-slate-300 text-slate-700 text-xs font-semibold rounded-full">Belum Divalidasi</span>
+                        student.dokumentasi.map((dok, idx) => {
+                          // Check if link is array (combined type)
+                          const isMultipleLinks = Array.isArray(dok.link);
+                          const links = isMultipleLinks ? dok.link : [dok.link];
+
+                          return (
+                            <div
+                              key={idx}
+                              className="p-4 bg-slate-50 rounded-lg border-2 border-slate-200"
+                            >
+                              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                <div className="flex-1 space-y-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">{KATEGORI_LABELS[dok.kategori] || dok.kategori}</span>
+                                    {dok.approved ? (
+                                      <span className="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full">Valid</span>
+                                    ) : dok.catatan && dok.catatan.trim() !== "" ? (
+                                      <span className="px-3 py-1 bg-red-500 text-white text-xs font-semibold rounded-full">Ditolak</span>
+                                    ) : (
+                                      <span className="px-3 py-1 bg-slate-300 text-slate-700 text-xs font-semibold rounded-full">Belum Divalidasi</span>
+                                    )}
+                                    {isMultipleLinks && <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">{links.length} Link</span>}
+                                  </div>
+
+                                  <p className="text-sm font-medium text-slate-700">{dok.judul}</p>
+
+                                  {dok.catatan && !dok.approved && <p className="text-sm text-red-600">Catatan: {dok.catatan}</p>}
+
+                                  <p className="text-xs text-slate-500">Diupload: {formatDate(dok.uploaded_at)}</p>
+
+                                  {/* Display multiple links */}
+                                  {isMultipleLinks && (
+                                    <div className="mt-3 space-y-2">
+                                      <p className="text-xs font-semibold text-slate-600">Link yang tersedia:</p>
+                                      <div className="space-y-1">
+                                        {links.map((link, linkIdx) => {
+                                          const isDriveLink = link.includes("drive.google.com");
+                                          const linkLabel = isDriveLink ? `File ${linkIdx + 1}` : `Link Eksternal ${linkIdx + 1}`;
+
+                                          return (
+                                            <a
+                                              key={linkIdx}
+                                              href={link}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                                            >
+                                              <ExternalLink className="h-3 w-3" />
+                                              {linkLabel}
+                                            </a>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
                                   )}
                                 </div>
-                                <p className="text-sm font-medium text-slate-700">{dok.judul}</p>
-                                {dok.catatan && !dok.approved && <p className="text-sm text-red-600">Catatan: {dok.catatan}</p>}
-                                <p className="text-xs text-slate-500">Diupload: {formatDate(dok.uploaded_at)}</p>
-                              </div>
 
-                              <div className="flex flex-col gap-2 md:w-auto w-full">
-                                <button
-                                  onClick={() => window.open(dok.link, "_blank")}
-                                  className="px-4 py-2 border-2 border-slate-300 rounded-lg hover:bg-slate-50 font-semibold text-sm transition-all flex items-center justify-center gap-2"
-                                >
-                                  <ExternalLink className="h-4 w-4" />
-                                  Lihat {dok.type === "file" ? "File" : "Link"}
-                                </button>
+                                <div className="flex flex-col gap-2 md:w-auto w-full">
+                                  {/* Show single button for single link */}
+                                  {!isMultipleLinks && (
+                                    <button
+                                      onClick={() => window.open(dok.link as string, "_blank")}
+                                      className="px-4 py-2 border-2 border-slate-300 rounded-lg hover:bg-slate-50 font-semibold text-sm transition-all flex items-center justify-center gap-2"
+                                    >
+                                      <ExternalLink className="h-4 w-4" />
+                                      Lihat {dok.type === "file" ? "File" : "Link"}
+                                    </button>
+                                  )}
 
-                                {!dok.approved && (
-                                  <div className="flex gap-2">
+                                  {/* Show "Buka Semua" button for multiple links */}
+                                  {isMultipleLinks && (
                                     <button
-                                      className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1"
-                                      onClick={() => handleApprove(student.nim, idx)}
+                                      onClick={() => {
+                                        links.forEach((link) => window.open(link, "_blank"));
+                                      }}
+                                      className="px-4 py-2 border-2 border-purple-300 bg-purple-50 rounded-lg hover:bg-purple-100 font-semibold text-sm transition-all flex items-center justify-center gap-2"
                                     >
-                                      <CheckCircle className="h-4 w-4" />
-                                      Validasi
+                                      <ExternalLink className="h-4 w-4" />
+                                      Buka Semua ({links.length})
                                     </button>
-                                    <button
-                                      className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1"
-                                      onClick={() => handleReject(student.nim, idx)}
-                                    >
-                                      <XCircle className="h-4 w-4" />
-                                      Reject
-                                    </button>
-                                  </div>
-                                )}
+                                  )}
+
+                                  {!dok.approved && (
+                                    <div className="flex gap-2">
+                                      <button
+                                        className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1"
+                                        onClick={() => handleApprove(student.nim, idx)}
+                                      >
+                                        <CheckCircle className="h-4 w-4" />
+                                        Validasi
+                                      </button>
+                                      <button
+                                        className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1"
+                                        onClick={() => handleReject(student.nim, idx)}
+                                      >
+                                        <XCircle className="h-4 w-4" />
+                                        Reject
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   </div>
