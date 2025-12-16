@@ -1,8 +1,27 @@
 import { Link } from "react-router-dom";
-import { BookOpen, CheckCircle, Upload } from "lucide-react";
+import { FileDown, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Home = () => {
+  const skFiles = [
+    {
+      title: "SK Pemberhentian-Penggantian KIP Ongoing TA 2025-2026",
+      file: "/Sk/SK PEMBERHENTIAN-PENGGANTIAN KIP ONGOING TA 2025-2026.pdf",
+    },
+    {
+      title: "SK Pencairan KIP Ongoing Skema 1 TA 2025-2026",
+      file: "/Sk/SK PENCAIRAN KIP ONGOING SKEMA 1 TA 2025-2026.pdf",
+    },
+    {
+      title: "SK Pencairan KIP Ongoing Skema 2 TA 2025-2026",
+      file: "/Sk/SK PENCAIRAN KIP ONGOING SKEMA 2 TA 2025-2026.pdf",
+    },
+    {
+      title: "Surat Edaran KIP 2025",
+      file: "/Sk/SURAT EDARAN KIP 2025_FINAL.pdf",
+    },
+  ];
+
   return (
     <div className="min-h-screen">
       <nav className="bg-primary/95 backdrop-blur-md border-b-2 border-primary/30 text-primary-foreground shadow-xl sticky top-0 z-50">
@@ -109,6 +128,38 @@ const Home = () => {
               </Button>
             </Link>
             <p className="text-sm text-foreground/70 mt-5 font-medium">Tidak perlu login, langsung isi formulir</p>
+          </div>
+
+          <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 md:p-8 mt-12 shadow-lg text-left">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+              <div className="space-y-1">
+                <h3 className="text-2xl font-bold text-primary">Download SK</h3>
+                <p className="text-sm text-foreground/70">Pilih dan unduh Surat Keputusan terkait KIP-K.</p>
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              {skFiles.map((item) => (
+                <div
+                  key={item.file}
+                  className="flex items-center justify-between bg-white rounded-xl border border-primary/10 p-4 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="bg-primary/10 text-primary p-2 rounded-lg">
+                      <FileDown className="h-5 w-5" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">{item.title}</p>
+                      <p className="text-xs text-foreground/70">Format PDF</p>
+                    </div>
+                  </div>
+                  <Button asChild variant="secondary" size="sm" className="shrink-0">
+                    <a href={encodeURI(item.file)} download>
+                      Unduh
+                    </a>
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </main>

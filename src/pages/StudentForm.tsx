@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { User, Hash, Calendar, FileText, FolderOpen, FileUp, ArrowLeft, Send, Link as LinkIcon, Plus, Trash2, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // ========================================
 // KONFIGURASI
@@ -40,6 +50,7 @@ interface FormData {
 const StudentForm = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     nim: "",
     semester: "",
@@ -50,6 +61,8 @@ const StudentForm = () => {
 
   // Get current kategori config
   const currentKategori = KATEGORI_OPTIONS.find((k) => k.value === formData.kategori);
+  const getKategoriLabel = () => currentKategori?.label || (formData.kategori ? formData.kategori.toUpperCase() : "-");
+  const getValidLinks = () => links.filter((l) => l.judul.trim() && l.url.trim());
 
   // Convert file to base64
   const fileToBase64 = (file: File): Promise<string> => {
@@ -105,30 +118,8 @@ const StudentForm = () => {
     setTimeout(() => toast.remove(), 3000);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("🚀 [START] Form submission");
-
-    // Validation
-    if (!formData.nim || !formData.semester || !formData.kategori) {
-      showToast("error", "Mohon lengkapi semua field yang wajib diisi");
-      return;
-    }
-
-    // Validate based on kategori requirements
-    if (currentKategori?.requireFile && selectedFiles.length === 0) {
-      showToast("error", "File dokumen wajib diupload untuk kategori ini");
-      return;
-    }
-
-    if (currentKategori?.requireLink) {
-      const validLinks = links.filter((l) => l.judul.trim() && l.url.trim());
-      if (validLinks.length === 0) {
-        showToast("error", "Link eksternal wajib diisi untuk kategori ini");
-        return;
-      }
-    }
-
+  const submitForm = async () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {
@@ -144,7 +135,7 @@ const StudentForm = () => {
       }
 
       // Prepare links array (only valid links)
-      const validLinks = links.filter((l) => l.judul.trim() && l.url.trim());
+      const validLinks = getValidLinks();
 
       // Prepare payload
       const payload = {
@@ -191,7 +182,6 @@ const StudentForm = () => {
 
       // Navigate ke home
       navigate("/");
-      return;
     } catch (error) {
       console.error("Error:", error);
       showToast("error", "Gagal mengirim data", "Periksa koneksi internet Anda");
@@ -199,6 +189,33 @@ const StudentForm = () => {
       setIsSubmitting(false);
       console.log("[END] Submission process");
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("🚀 [START] Form submission");
+
+    // Validation
+    if (!formData.nim || !formData.semester || !formData.kategori) {
+      showToast("error", "Mohon lengkapi semua field yang wajib diisi");
+      return;
+    }
+
+    // Validate based on kategori requirements
+    if (currentKategori?.requireFile && selectedFiles.length === 0) {
+      showToast("error", "File dokumen wajib diupload untuk kategori ini");
+      return;
+    }
+
+    if (currentKategori?.requireLink) {
+      const validLinks = getValidLinks();
+      if (validLinks.length === 0) {
+        showToast("error", "Link eksternal wajib diisi untuk kategori ini");
+        return;
+      }
+    }
+
+    setConfirmOpen(true);
   };
 
   return (
@@ -436,6 +453,70 @@ const StudentForm = () => {
           </div>
         </div>
       </main>
+
+      <AlertDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Kirim kegiatan sekarang?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Pastikan data, file, dan link sudah benar. Setelah dikirim, data akan diproses oleh tim validasi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3 text-sm text-foreground/80">
+            <div className="grid grid-cols-[110px_1fr] gap-2">
+              <span className="font-semibold text-foreground/90">NIM</span>
+              <span className="font-medium">{formData.nim || "-"}</span>
+              <span className="font-semibold text-foreground/90">Semester</span>
+              <span className="font-medium">{formData.semester || "-"}</span>
+              <span className="font-semibold text-foreground/90">Kategori</span>
+              <span className="font-medium">{getKategoriLabel()}</span>
+            </div>
+
+            <div className="space-y-1">
+              <p className="font-semibold text-foreground/90">File terpilih</p>
+              {selectedFiles.length > 0 ? (
+                <ul className="list-disc list-inside space-y-0.5">
+                  {selectedFiles.map((file, idx) => (
+                    <li key={idx} className="truncate">{file.name}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-foreground/60">Belum ada file terpilih</p>
+              )}
+            </div>
+
+            {formData.kategori && currentKategori?.requireLink && (
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground/90">Link eksternal</p>
+                {getValidLinks().length > 0 ? (
+                  <ul className="list-disc list-inside space-y-0.5">
+                    {getValidLinks().map((link, idx) => (
+                      <li key={idx}>
+                        <span className="font-medium">{link.judul}</span>{" "}
+                        <span className="text-foreground/60">{link.url}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-foreground/60">Belum ada link valid</p>
+                )}
+              </div>
+            )}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={submitForm}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Mengirim..." : "Kirim Sekarang"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <style>{`
         @keyframes slide-in {
