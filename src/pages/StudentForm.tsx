@@ -1,16 +1,7 @@
 import { useState } from "react";
 import { User, Hash, Calendar, FileText, FolderOpen, FileUp, ArrowLeft, Send, Link as LinkIcon, Plus, Trash2, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 // ========================================
 // KONFIGURASI
@@ -34,6 +25,7 @@ const KATEGORI_OPTIONS = [
   { value: "lomba_nasional", label: "Lomba Nasional", requireFile: true, requireLink: false },
   { value: "pengabdian", label: "Pengabdian Masyarakat", requireFile: true, requireLink: false },
   { value: "mentoring", label: "Mentoring", requireFile: true, requireLink: false },
+  { value: "sertifikasi", label: "Sertifikasi", requireFile: true, requireLink: false },
 ];
 
 interface LinkItem {
@@ -267,7 +259,6 @@ const StudentForm = () => {
               onSubmit={handleSubmit}
               className="space-y-6"
             >
-
               {/* NIM */}
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
@@ -461,9 +452,7 @@ const StudentForm = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Kirim kegiatan sekarang?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Pastikan data, file, dan link sudah benar. Setelah dikirim, data akan diproses oleh tim validasi.
-            </AlertDialogDescription>
+            <AlertDialogDescription>Pastikan data, file, dan link sudah benar. Setelah dikirim, data akan diproses oleh tim validasi.</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-3 text-sm text-foreground/80">
             <div className="grid grid-cols-[110px_1fr] gap-2">
@@ -480,7 +469,12 @@ const StudentForm = () => {
               {selectedFiles.length > 0 ? (
                 <ul className="list-disc list-inside space-y-0.5">
                   {selectedFiles.map((file, idx) => (
-                    <li key={idx} className="truncate">{file.name}</li>
+                    <li
+                      key={idx}
+                      className="truncate"
+                    >
+                      {file.name}
+                    </li>
                   ))}
                 </ul>
               ) : (
@@ -495,8 +489,7 @@ const StudentForm = () => {
                   <ul className="list-disc list-inside space-y-0.5">
                     {getValidLinks().map((link, idx) => (
                       <li key={idx}>
-                        <span className="font-medium">{link.judul}</span>{" "}
-                        <span className="text-foreground/60">{link.url}</span>
+                        <span className="font-medium">{link.judul}</span> <span className="text-foreground/60">{link.url}</span>
                       </li>
                     ))}
                   </ul>

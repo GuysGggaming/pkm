@@ -21,6 +21,7 @@ const KATEGORI_LABELS: Record<string, string> = {
   lomba_nasional: "Lomba Nasional",
   pengabdian: "Pengabdian Masyarakat",
   mentoring: "Mentoring",
+  sertfikasi: "Sertifikasi",
 };
 
 interface Dokumen {
