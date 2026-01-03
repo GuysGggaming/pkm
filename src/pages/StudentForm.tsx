@@ -30,6 +30,7 @@ const KATEGORI_OPTIONS = [
   { value: "buku_isbn", label: "Buku ISBN", requireFile: true, requireLink: false },
   { value: "hki", label: "HKI", requireFile: true, requireLink: false },
   { value: "kegiatan_organisasi", label: "Kegiatan Organisasi", requireFile: true, requireLink: false },
+  { value: "workshop", label: "Workshop", requireFile: true, requireLink: false },
 ];
 
 interface LinkItem {
