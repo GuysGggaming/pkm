@@ -25,6 +25,7 @@ const KATEGORI_LABELS: Record<string, string> = {
   jurnal_sinta5: "Jurnal SINTA 5",
   buku_isbn: "Buku ISBN",
   hki: "HKI",
+  kegiatan_organisasi: "Kegiatan Organisasi",
 };
 
 interface Dokumen {

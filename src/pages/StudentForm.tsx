@@ -29,6 +29,7 @@ const KATEGORI_OPTIONS = [
   { value: "jurnal_sinta5", label: "Jurnal SINTA 5", requireFile: true, requireLink: true },
   { value: "buku_isbn", label: "Buku ISBN", requireFile: true, requireLink: false },
   { value: "hki", label: "HKI", requireFile: true, requireLink: false },
+  { value: "kegiatan_organisasi", label: "Kegiatan Organisasi", requireFile: true, requireLink: false },
 ];
 
 interface LinkItem {
